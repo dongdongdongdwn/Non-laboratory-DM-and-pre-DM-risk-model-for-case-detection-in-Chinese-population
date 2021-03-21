@@ -11,5 +11,6 @@ BTW, the ML and LR were deployed to PC program using pyinstaller and the coding 
 
 Thank you.
 
-Best regards,
+
+Best regards
 Dovey DONG
