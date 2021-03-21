@@ -1,0 +1,425 @@
+import pickle
+import pandas as pd
+from pandas import read_excel
+from tkinter import *
+from tkinter import messagebox
+import tkinter.messagebox
+import tkinter.filedialog
+import math
+from tkinter import filedialog
+import numpy
+import os
+import xgboost as xgb
+import xlsxwriter
+
+Dir_Path=os.getcwd()
+
+phsdata_selected = read_excel('phs_he_copy_selected.xlsx')
+X_new, y_new = phsdata_selected.iloc[:,:-1], phsdata_selected.iloc[:,-1]
+model_final= xgb.XGBClassifier(objective='reg:logistic',learning_rate=0.1,max_depth=4,subsample=0.7,colsample_bytree=0.4,alpha=5,n_estimators=63)
+model_final.fit(X_new,y_new)
+
+#model_final = pickle.load(open("XGB with selected (whole date)).dat", "rb"))
+
+#loaded_model = pickle.load(open("XGB with selected (whole date).dat", "rb"))
+
+
+root=tkinter.Tk()
+root.title('DM & Pre-DM Risk Calculation Tool for HMRF project')
+root.geometry('900x650')
+
+##Two big frames##
+title_label = tkinter.Label(root,text="DM and pre-DM Risk Scoring Tools", font='Helvetica 15 bold',fg="white",width=75,height=2,bg='SteelBlue4')
+title_label.pack()
+title_label.place(x=0,y=0)
+
+
+
+
+f1= tkinter.Frame(root,bg='gray92',width=400,height=500)
+f1.pack_propagate(0)
+f1.place(x=30,y=56)
+f2= tkinter.Frame(root,bg='gray92',width=400,height=500)
+f2.pack_propagate(0)
+f2.place(x=460,y=56)
+f3= tkinter.Frame(root,bg='SteelBlue4',width=900,height=80)
+f3.pack_propagate(0)
+f3.place(x=0,y=572)
+
+image_title_show1 = tkinter.Label(f3, text="  HKU \n Med",bg='SteelBlue4',fg='white',font='Helvetica 18 bold')
+image_title_show1.pack()
+image_title_show1.place(x=5,y=10)
+
+image_title_show2 = tkinter.Label(f3, text="LKS Faculty of Medicine\nDepartment of Family Medicine\n&Primary Care",
+                                  bg='SteelBlue4',fg='white',font='Helvetica 13 bold',justify='left')
+image_title_show2.pack()
+image_title_show2.place(x=77,y=12)
+
+image_copyright = tkinter.Label(f3, text="---------------------Copyright---------------------\nc 2020. HKU FMPC. All rights reserved.",
+                                bg='SteelBlue4',fg='white',font='Helvetica 9')
+image_copyright.pack()
+image_copyright.place(x=670,y=40)
+
+
+
+
+
+##########   Menu   #########
+def donothing():
+    print ("")
+def refreshentry():
+    value_WHR.delete(0,'end')
+    value_slpdur.delete(0,'end')
+    value_age.delete(0,'end')
+    value_BMI.delete(0,'end')
+    value_DBP.delete(0,'end')
+    value_fruit.delete(0,'end')
+    value_SBP.delete(0,'end')
+    value_sit.delete(0,'end')
+    value_ve.delete(0,'end')
+    value_waist.delete(0,'end')
+    entry_filein.delete(0,'end')
+    entry_fileout.delete(0,'end')
+def imputation():
+    age = value_age.get()
+    sbp = value_SBP.get()
+    dbp = value_DBP.get()
+    bmi = value_BMI.get()
+    waist = value_waist.get()
+    whr = value_WHR.get()
+    slpdur = value_slpdur.get()
+    ve = value_ve.get()
+    sit = value_sit.get()
+    fruit = value_fruit.get()
+    if len(age) == 0:
+        value_age.insert(tkinter.END,"39")
+    if len(sbp) == 0 :
+        value_SBP.insert(tkinter.END, "113")
+    if len(dbp) == 0:
+     value_DBP.insert(tkinter.END, "75.5")
+    if len(bmi) == 0:
+         value_BMI.insert(tkinter.END, "22.6")
+    if len(waist) == 0:
+        value_waist.insert(tkinter.END, "79")
+    if len(whr) == 0:
+        value_WHR.insert(tkinter.END, "0.84")
+    if len(slpdur) == 0:
+        value_slpdur.insert(tkinter.END, "7")
+    if len(ve) == 0:
+        value_ve.insert(tkinter.END, "1")
+    if len(sit) == 0:
+        value_sit.insert(tkinter.END, "2940")
+    if len(fruit) == 0:
+        value_fruit.insert(tkinter.END, "30")
+def range():
+    tkinter.messagebox.showinfo(title="Range of clinical parameters", message=" SBP:     50 - 280  mmHg \n \n "
+                                                                              "DBP:    30 - 150  mmHg \n \n BMI:     10 - 60    kg/m^2"
+                                                                              " \n \nWaist:   30 - 153  cm \n \n Hip:      40 - 150  cm ")
+
+image_require = tkinter.PhotoImage(file="example.gif")
+
+def require():
+    win= Toplevel()
+    win.title("Import data requirement")
+    win.geometry("761x556+10+10")
+
+    image_require_label = tkinter.Label(win, image=image_require)
+    image_require_label.pack()
+    win.mainloop()
+def contact():
+    tkinter.messagebox.showinfo(title="Contact Information", message=" If you run into any issues along the way, \n "
+                                                                     "please send email to Mr. Dovey DONG \n dovey@connect.hku.hk")
+
+
+menu = Menu(root)
+menu_tools = Menu(menu,tearoff=0)
+menu_tools.add_command(label='Reload',command=refreshentry,font=("Verdana",10))
+menu_tools.add_command(label='Missing data imputation',command=imputation,font=("Verdana",10))
+menu_tools.add_separator()
+menu_tools.add_command(label='Range of predictors',command=range,font=("Verdana",10))
+menu.add_cascade(label='Tools',menu=menu_tools)
+
+
+menu_help = Menu(menu,tearoff=0)
+menu_help.add_command(label='Required Data format',command=require,font=("Verdana", 10))
+menu_help.add_separator()
+menu_help.add_command(label='Contact',command=contact,font=("Verdana", 10))
+
+menu.add_cascade(label='Help',menu=menu_help)
+
+
+
+##############   Single case prediction in Frame 1      ##########
+title_f1 = tkinter.LabelFrame(f1,text="Risk Prediction for Single Case",bg='gray92',width=400,height=600,font=('Calibri',14),labelanchor='nw')
+title_f1.pack()
+title_f1.place(x=0,y=0)
+
+label_age = tkinter.Label(f1,text="Age (years) =",font=('Calibri',11),width=27,height=1)
+label_age.pack()
+label_age.place(x=5,y=50)
+value_age = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_age.pack()
+value_age.place(x=245,y=50)
+
+label_smoking = tkinter.Label(f1,text="Smoking Status :  ",font=('Calibri',11),width=27,height=1)
+label_smoking.pack()
+label_smoking.place(x=5,y=80)
+var_smoking = IntVar()
+option_smoking1 = Radiobutton(f1,text='Smoker',variable=var_smoking,value=1)
+option_smoking1.pack(anchor=W)
+option_smoking1.place(x=245,y=80)
+option_smoking2 = Radiobutton(f1,text='Non-Smoker',variable=var_smoking,value=0)
+option_smoking2.pack(anchor=W)
+option_smoking2.place(x=245,y=100)
+
+
+
+label_SBP = tkinter.Label(f1,text="SBP (mmHg) =",font=('Calibri',11),width=27,height=1)
+label_SBP.pack()
+label_SBP.place(x=5,y=140)
+value_SBP = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_SBP.pack()
+value_SBP.place(x=245,y=140)
+
+label_DBP = tkinter.Label(f1,text="DBP (mmHg) =",font=('Calibri',11),width=27,height=1)
+label_DBP.pack()
+label_DBP.place(x=5,y=160)
+value_DBP = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_DBP.pack()
+value_DBP.place(x=245,y=160)
+
+label_BMI = tkinter.Label(f1,text="BMI (kg/m^2) =",font=('Calibri',11),width=27,height=1)
+label_BMI.pack()
+label_BMI.place(x=5,y=180)
+value_BMI = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_BMI.pack()
+value_BMI.place(x=245,y=180)
+
+label_waist = tkinter.Label(f1,text="Waist (cm) =",font=('Calibri',11),width=27,height=1)
+label_waist.pack()
+label_waist.place(x=5,y=200)
+value_waist = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_waist.pack()
+value_waist.place(x=245,y=200)
+
+label_WHR = tkinter.Label(f1,text="Waist to Hip Ratio=",font=('Calibri',11),width=27,height=1)
+label_WHR.pack()
+label_WHR.place(x=5,y=220)
+value_WHR = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_WHR.pack()
+value_WHR.place(x=245,y=220)
+
+
+label_slpdur = tkinter.Label(f1,text="Sleep duration per day (hours) ",font=('Calibri',11),width=27,height=1)
+label_slpdur.pack()
+label_slpdur.place(x=5,y=260)
+value_slpdur = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_slpdur.pack()
+value_slpdur.place(x=245,y=260)
+
+label_ve = tkinter.Label(f1,text="Vigorous exercise time (min/week) ",font=('Calibri',11),width=27,height=1)
+label_ve.pack()
+label_ve.place(x=5,y=280)
+value_ve = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_ve.pack()
+value_ve.place(x=245,y=280)
+
+label_sit = tkinter.Label(f1,text="Sedentary time (min/week) ",font=('Calibri',11),width=27,height=1)
+label_sit.pack()
+label_sit.place(x=5,y=300)
+value_sit = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_sit.pack()
+value_sit.place(x=245,y=300)
+
+label_fruit = tkinter.Label(f1,text="Fruit consumption (servings/month) ",font=('Calibri',11),width=29,height=1)
+label_fruit.pack()
+label_fruit.place(x=5,y=320)
+value_fruit = tkinter.Entry(f1,width=15,font=('Calibri',11),bd=3)
+value_fruit.pack()
+value_fruit.place(x=245,y=320)
+
+
+def cal_log():
+    age = value_age.get()
+    smoking = var_smoking.get()
+    sbp = value_SBP.get()
+    dbp = value_DBP.get()
+    bmi = value_BMI.get()
+    waist = value_waist.get()
+    whr = value_WHR.get()
+    slpdur = value_slpdur.get()
+    ve = value_ve.get()
+    sit = value_sit.get()
+    fruit = value_fruit.get()
+
+    if len(age)==0 or len(sbp)==0 or len(dbp)==0 or len(bmi)==0 or len(waist)==0 or len(whr)==0 or len(slpdur)==0 or len(ve)==0 or len(sit)==0 or len(fruit)==0:
+        tkinter.messagebox.showerror(title="Error",message="Pls input all the parameters")
+    else:
+        age_v = float(age)
+        smoking_v = float(smoking)
+        sbp_v = float(sbp)
+        dbp_v = float(dbp)
+        bmi_v = float(bmi)
+        waist_v = float(waist)
+        whr_v = float(whr)
+        slpdur_v = float(slpdur)
+        ve_v = float(ve)
+        sit_v = float(sit)
+        fruit_v = float(fruit)
+        comb = 0.1052*age_v + 0.1362*bmi_v + 0.4378*smoking_v - 0.6792*slpdur_v + 1.8879*whr_v - 0.0025524*ve_v - 0.003459*fruit_v - 0.001057*age_v*age_v + 0.0099448*age_v*slpdur_v - 7.4745
+        log_risk = round((1/(math.exp(0 - comb) + 1))*100,2)
+        label_logrisk = tkinter.Label(f1, text=(log_risk,"%"), bg='white', font=('boldface', 12), width=8, height=1)
+        label_logrisk.pack()
+        label_logrisk.place (x=315, y=375)
+
+
+
+button_log = tkinter.Button(f1,text="Calculate Risk with Logistic Model:",fg='black',font=('boldface',12),width=30,height=1,
+                            bd=3,bg='Lightgrey',activebackground='grey',command=cal_log)
+button_log.pack()
+button_log.place(x=30,y=370)
+
+
+def cal_xgb():
+    age = value_age.get()
+    smoking = var_smoking.get()
+    sbp = value_SBP.get()
+    dbp = value_DBP.get()
+    bmi = value_BMI.get()
+    waist = value_waist.get()
+    whr = value_WHR.get()
+    slpdur = value_slpdur.get()
+    ve = value_ve.get()
+    sit = value_sit.get()
+    fruit = value_fruit.get()
+
+    if len(age)==0 or len(sbp)==0 or len(dbp)==0 or len(bmi)==0 or len(waist)==0 or len(whr)==0 or len(slpdur)==0 or len(ve)==0 or len(sit)==0 or len(fruit)==0:
+        tkinter.messagebox.showerror(title="Error",message="Pls input all the parameters")
+    else:
+        age_v = float(age)
+        smoking_v = float(smoking)
+        sbp_v = float(sbp)
+        dbp_v = float(dbp)
+        bmi_v = float(bmi)
+        waist_v = float(waist)
+        whr_v = float(whr)
+        slpdur_v = float(slpdur)
+        ve_v = float(ve)
+        sit_v = float(sit)
+        fruit_v = float(fruit)
+        new = pd.DataFrame(data={'AGE':[age_v],'BMI':[bmi_v],'WHR':[whr_v],'SBP':[sbp_v],'WAIST':[waist_v],'SLEEP_HOUR':[slpdur_v],
+                                 'SMOKING':[smoking_v],'VIGOROUS_EXERCISE':[ve_v], 'DBP':[dbp_v],'SEDENTARY_TIME':[sit_v]})
+        risk_xgb_o = model_final.predict_proba(new)[0,1]
+        risk_xgb = round(risk_xgb_o*100,2)
+        label_xgbrisk = tkinter.Label(f1, text=(risk_xgb, "%"), bg='white', font=('boldface', 12), width=8, height=1)
+        label_xgbrisk.pack()
+        label_xgbrisk.place(x=315, y=415)
+
+button_xgb = tkinter.Button(f1,text="Calculate Risk with AI:",fg='black',font=('boldface',12),width=30,height=1,
+                            bd=3,bg='lightgrey',activebackground='grey',command=cal_xgb)
+button_xgb.pack()
+button_xgb.place(x=30,y=410)
+
+
+
+
+######################### Batch risk calculation ###################
+
+title_f2 = tkinter.LabelFrame(f2,text="Batch Risk Prediction",width=400,height=600,font=('Calibri',14))
+title_f2.pack()
+title_f2.place(x=0,y=0)
+
+intro_f2 = tkinter.Label(f2,text="  *You can upload your dataset in excel(.xlsx) to calculate \n      the risk of DM&pre-DM in batch."
+                                 "\n   Pls read 'Help' to learn more about the required data format.",
+                          font = ('Calibri', 10),width=50,height=4,justify='left')
+intro_f2.pack()
+intro_f2.place(x=5,y=30)
+
+label_filein = tkinter.Label(f2,text="Please upload your data: ",font=('Calibri',13),width=20,height=1,justify='left')
+label_filein.pack()
+label_filein.place(x=5,y=150)
+
+def BrowserFile():
+    filename = filedialog.askopenfilename(initialdir="/",
+                                          title="Select a File",
+                                          filetypes=(("Excel files",
+                                                      "*.xlsx*"),
+                                                     ("all files",
+                                                      "*.*")))
+    entry_filein.delete(0, tkinter.END)
+    entry_filein.insert(tkinter.END,filename)
+
+
+entry_filein = tkinter.Entry(f2,width=40)
+entry_filein.pack()
+entry_filein.place(x=30,y=185)
+
+
+button_filein = tkinter.Button(f2,text="Open...",fg='black',font=('boldface',10),width=5,height=1,
+                            bd=3,bg='lightgrey',activebackground='grey',command=BrowserFile)
+button_filein.pack()
+button_filein.place(x=280,y=180)
+
+
+
+label_fileout = tkinter.Label(f2,text="Choose the folder to save file with calculated risk:",font=('Calibri',13),width=40,height=1,justify='left')
+label_fileout.pack()
+label_fileout.place(x=5,y=240)
+
+def BrowserDir():
+    directory = tkinter.filedialog.askdirectory(title='Select save direction')
+    if directory:
+      entry_fileout.delete(0, tkinter.END)
+      entry_fileout.insert(tkinter.END, directory)
+
+
+
+entry_fileout = tkinter.Entry(f2,width=40)
+entry_fileout.pack()
+entry_fileout.place(x=30,y=275)
+
+
+button_fileout = tkinter.Button(f2,text="Select...",fg='black',font=('boldface',10),width=5,height=1,
+                            bd=3,bg='lightgrey',activebackground='grey',command=BrowserDir)
+button_fileout.pack()
+button_fileout.place(x=280,y=270)
+
+
+
+def batch_cal():
+    batch_data = pd.read_excel(entry_filein.get())
+    predictor = ['AGE', 'BMI', 'WHR', 'SBP', 'WAIST', 'SLEEP_HOUR', 'SMOKING', 'VIGOROUS_EXERCISE', 'DBP', 'SEDENTARY_TIME']
+    output_prob = model_final.predict_proba(batch_data[predictor])[:,1]*100
+    output_prob_pd = pd.DataFrame(output_prob)
+
+    outputdata = pd.concat([batch_data, output_prob_pd], axis=1)
+    outputdata.rename(columns={0:'XGB risk'},inplace=True)
+
+    com = 0.1052 * batch_data["AGE"] + 0.1362 * batch_data["BMI"] + 0.4378 * batch_data["SMOKING"] - \
+           0.6792 * batch_data["SLEEP_HOUR"] + 1.8879 * batch_data["WHR"] - 0.0025524 * batch_data["VIGOROUS_EXERCISE"] -\
+           0.003459 * batch_data["FRUIT"] - 0.001057 * batch_data["AGE"] * batch_data["AGE"] + 0.0099448 * batch_data["AGE"]* batch_data["SLEEP_HOUR"]- 7.4745
+    log_risk_batch = round((1 / (numpy.exp(0 - com) + 1)) * 100, 2)
+    outputdata2 = pd.concat([outputdata, log_risk_batch], axis=1)
+    outputdata2.rename(columns={0: 'Logistic model risk'}, inplace=True)
+
+    writer = pd.ExcelWriter(entry_fileout.get() + '/DM&preDM_Risk Prediction Result.xlsx', engine='xlsxwriter')
+    outputdata2.to_excel(writer, sheet_name='Sheet1', index=False)
+    writer.save()
+
+
+
+
+
+button_batchcal = tkinter.Button(f2,text="Calculate and Output",fg='black',font=('boldface',13),width=18,height=1,
+                            bd=3,bg='lightgrey',activebackground='grey',command=batch_cal)
+button_batchcal.pack()
+button_batchcal.place(x=100,y=370)
+
+
+
+
+
+
+
+root.config(menu=menu,bg='white')
+root.mainloop()
